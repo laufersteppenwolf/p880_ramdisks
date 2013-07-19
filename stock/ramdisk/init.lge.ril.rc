@@ -1,0 +1,4 @@
+
+
+#below line should be removed when applied to model
+include init.lge.logger.rc

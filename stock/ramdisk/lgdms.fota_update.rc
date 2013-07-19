@@ -1,0 +1,49 @@
+on fota-update
+    export PATH /sbin
+    export ANDROID_ROOT /system
+    export ANDROID_DATA /data
+    export EXTERNAL_STORAGE /storage/external_SD
+    export PATH /sbin:/data/data/com.lge.lgfotaclient/files/
+
+    symlink /system/etc /etc
+
+    mkdir /sdcard
+    mkdir /system
+    mkdir /data
+    mkdir /cache
+    mount /tmp /tmp tmpfs
+
+    #mount rootfs rootfs / rw remount
+
+
+# mount mmc partitions
+    ##wait /dev/block/platform/mmci-omap-hs.1/by-name/system
+    ##mount ext4 /dev/block/platform/mmci-omap-hs.1/by-name/system /system rw barrier=1
+    
+    #wait /dev/block/platform/sdhci-tegra.3/by-num/p3
+    #mount ext4 /dev/block/platform/sdhci-tegra.3/by-num/p3 /system wait rw
+
+    #mount ext4 /dev/block/platform/sdhci-tegra.3/by-name/APP /system wait rw
+    mount ext4 /dev/block/platform/sdhci-tegra.3/by-name/APP /system wait rw barrier=1
+    
+    ##wait /dev/block/platform/mmci-omap-hs.1/by-name/userdata
+    ##exec /system/bin/demigod_make_ext4fs -e /dev/block/platform/mmci-omap-hs.1/by-name/userdata /data
+    ##exec /system/bin/e2fsck -p /dev/block/platform/mmci-omap-hs.1/by-name/userdata
+    ##mount ext4 /dev/block/platform/mmci-omap-hs.1/by-name/userdata /data nosuid nodev barrier=1 noauto_da_alloc
+    #wait /dev/block/platform/sdhci-tegra.3/by-num/p8
+    #mount ext4 /dev/block/platform/sdhci-tegra.3/by-num/p8 /data wait noatime nodiratime nosuid nodev discard,noauto_da_alloc
+
+    #mount ext4 /dev/block/platform/sdhci-tegra.3/by-name/UDA /data wait noatime nosuid nodev journal_async_commit,data=ordered,nodelalloc,errors=panic
+    mount ext4 /dev/block/platform/sdhci-tegra.3/by-name/UDA /data wait noatime nosuid nodev barrier=1,nomblk_io_submit,data=ordered,nodelalloc,errors=continue
+    
+#    exec /system/bin/demigod_make_ext4fs -e /dev/block/platform/mmci-omap-hs.1/by-name/cache /cache
+#    mount ext4 /dev/block/platform/mmci-omap-hs.1/by-name/cache /cache nosuid nodev barrier=1
+	mount ext4 /dev/block/platform/sdhci-tegra.3/by-name/CAC /cache wait rw noatime nosuid nodev barrier=1,nomblk_io_submit
+    
+	wait /dev/graphics/fb0
+	wait /dev/tty0
+	
+    chown system system /data
+    chmod 0771 /data   
+
+	mkdir /cache/fota
